@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t talfers/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true USERNAME/react-test npm test
+
+after_success:
+  - docker build -t talfers/docker-complex-client ./client
+  - docker build -t talfers/docker-complex-server ./server
+  - docker build -t talfers/docker-complex-worker ./worker
+  - docker build -t talfers/docker-complex-nginx ./nginx
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  - docker push talfers/docker-complex-client
+  - docker push talfers/docker-complex-server
+  - docker push talfers/docker-complex-worker
+  - docker push talfers/docker-complex-nginx
